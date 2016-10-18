@@ -280,16 +280,16 @@ grammar Grammar {
 		[ $new-indent $<content>=[ \N* ] ]+ % <.line-break>
 	}
 
-	token yes {
+	token boolean-true {
 		[ :i y | yes | true | on ] <|w>
 	}
-	token no {
+	token boolean-false {
 		[ :i n | no | false | off ] <|w>
 	}
-	token boolean {
-		<yes> | <no>
+	token scalar-boolean {
+		<boolean-true> | <boolean-false>
 	}
-	token inline-map {
+	token flow-mapping {
 		'{' <.ws> <pairlist> <.ws> '}'
 	}
 	rule pairlist {
@@ -299,7 +299,7 @@ grammar Grammar {
 		<key> ':' [ <inline> || <inline=inline-plain> ]
 	}
 
-	token inline-list {
+	token flow-sequence {
 		'[' <.ws> <inline-list-inside> <.ws> ']'
 	}
 	rule inline-list-inside {
@@ -324,11 +324,11 @@ grammar Grammar {
 		| <value=float>
 		| <value=inf>
 		| <value=nan>
-		| <value=yes>
-		| <value=no>
+		| <value=boolean-true>
+		| <value=boolean-false>
 		| <value=null>
-		| <value=inline-map>
-		| <value=inline-list>
+		| <value=flow-mapping>
+		| <value=flow-sequence>
 		| <value=single-quoted>
 		| <value=double-quoted>
 		| <value=alias>
@@ -535,7 +535,7 @@ grammar Grammar {
 			make $<value>.ast;
 		}
 
-		method inline-map($/) {
+		method flow-mapping($/) {
 			make $<pairlist>.ast.hash;
 		}
 		method pairlist($/) {
@@ -547,7 +547,7 @@ grammar Grammar {
 		method identifier($/) {
 			make ~$/;
 		}
-		method inline-list($/) {
+		method flow-sequence($/) {
 			make $<inline-list-inside>.ast
 		}
 		method inline-list-inside($/) {
@@ -615,10 +615,10 @@ grammar Grammar {
 		method nan($/) {
 			make NaN;
 		}
-		method yes($/) {
+		method boolean-true($/) {
 			make True;
 		}
-		method no($/) {
+		method boolean-false($/) {
 			make False;
 		}
 		method int($/) {
